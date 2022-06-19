@@ -24,14 +24,14 @@
 #define thread_B_prio 1
 #define thread_C_prio 1
 #define thread_D_prio 1
-#define thread_E_prio 1
+#define thread_E_prio 2
 
 #define BOARDBUT1 11 /* Pin at which BUT1 is connected. Addressing is direct (i.e., pin number) */
 #define BOARDBUT2 12 /* Pin at which BUT2 is connected. Addressing is direct (i.e., pin number) */
 #define BOARDBUT3 24 /* Pin at which BUT3 is connected. Addressing is direct (i.e., pin number) */
 #define BOARDBUT4 25 /* Pin at which BUT4 is connected. Addressing is direct (i.e., pin number) */
 
-#define SAMP_PERIOD_MS 50
+#define SAMP_PERIOD_MS 25
 /* Therad periodicity (in ms)*/
 #define thread_A_period 1000
 
@@ -297,7 +297,7 @@ void thread_B_code(void *argA, void *argB, void *argC) {
             }
             finalMean = sum / ii;
         }
-        //  finalMean = mean;
+          finalMean = mean;
         sum = 0;
         ii = 0;
         //  }else{
@@ -317,7 +317,7 @@ void thread_B_code(void *argA, void *argB, void *argC) {
  */
 
 int ret1 = 0;
-const float TI = 0.1;
+const float TI = 0.05;
 const float K = 0.05;
 const float h = SAMP_PERIOD_MS / 1000.0;
 float s0 = K * (1 + (h / TI));
@@ -342,8 +342,12 @@ void thread_C_code(void *argA, void *argB, void *argC) {
         //  if (error > 10000) error = 10000;
         u = (s0 * error) + (s1 * prevError) + prevU;
         // u = error * K;
-        if (u < 0.0) u = 0.0;
-        if (u > 100.0) u = 100.0;
+        if (u <= 0.0) {
+            u = 0.0;
+        }
+        if (u >= 100.0) {
+            u = 100.0;
+        }
         prevU = u;
         prevError = error;
 
@@ -351,12 +355,9 @@ void thread_C_code(void *argA, void *argB, void *argC) {
         // if(integral>100)integral=100;
         // if(integral<-0)integral=-0;
         //  u=integral+(error*K);
-
-        count++;
-        //  if (count % 20000 == 0) ref += 1;
-        // if (ref == 101) ref = 0;
-        duty = (int)u;
-        ret1 = pwm_pin_set_usec(pwm0_dev, BOARDLED_PIN, pwmPeriod_us, (unsigned int)((pwmPeriod_us * duty) / 100), PWM_POLARITY_NORMAL);
+        
+        //  if (duty > 100) duty = 100;
+        ret1 = pwm_pin_set_usec(pwm0_dev, BOARDLED_PIN, pwmPeriod_us, (unsigned int)((pwmPeriod_us * u) / 100), PWM_POLARITY_NORMAL);
         if (ret1) {
             printk("Erroooor %d: failed to set pulse width\n", ret1);
         }
@@ -369,8 +370,29 @@ void thread_D_code(void *argA, void *argB, void *argC) {
     while (1) {
         k_sem_take(&sem_cd, K_FOREVER);
         //  printk("ola\r\n");
+        display++;
+        if (display % 10 == 0) {
+            display++;
+            if (display % 10 == 0) printk("ref:%d,error:%d,u:%d,feedback:%d \r\n", (int)ref, (int)error, (int)u, (int)feedBack);
+            printk("\e[1;1H\e[2J");
+            printk("*-----* Projeto SETR *-----*\r\n");
+            if (mode == automatic) {
+                printk("Modo automático\r\n");
+
+            } else {
+                printk("Modo manual\r\n");
+            }
+            printk("ref:%d,error:%d,u:%d,feedback:%d \r\n", (int)ref, (int)error, (int)u, (int)feedBack);
+        }
+        //k_sem_give(&sem_de);
+    }
+}
+
+void thread_E_code(void *argA, void *argB, void *argC) {
+    while (1) {
+       // k_sem_take(&sem_de, K_FOREVER);
         if (flag) {
-            k_msleep(5);
+            k_msleep(10);
             if (!gpio_pin_get(gpio0_dev, BOARDBUT1)) mode = manual;
 
             if ((!gpio_pin_get(gpio0_dev, BOARDBUT2)) && mode == manual) {
@@ -383,27 +405,6 @@ void thread_D_code(void *argA, void *argB, void *argC) {
                 if (ref == -1) ref = 0;
             }
             flag = 0;
-        }
-        k_sem_give(&sem_de);
-    }
-}
-
-void thread_E_code(void *argA, void *argB, void *argC) {
-    while (1) {
-        k_sem_take(&sem_de, K_FOREVER);
-        display++;
-        if (display % 10 == 0) {
-            display++;
-            if (display % 10 == 0) printk("ref:%d,error:%d,u:%d,feedback:%d \r\n", (int)ref, (int)error, (int)u, (int)feedBack);
-            printk("\e[1;1H\e[2J");
-            printk("*-----* Projeto SETR *-----*\r\n");
-            if (mode == automatic) {
-                printk("Modo automático\r\n");
-                
-            } else {
-                printk("Modo manual\r\n");
-            }
-            printk("ref:%d,error:%d,u:%d,feedback:%d \r\n", (int)ref, (int)error, (int)u, (int)feedBack);
         }
     }
 }
