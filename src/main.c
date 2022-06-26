@@ -1,3 +1,11 @@
+/** @file main.c
+ * @brief Main.c is the main file of the Assignment 5 - Implementing a closed loop control application in Zephyr
+ *
+ * 
+ * @author Ângelo Mostardinha, Ruben Costa, Leonardo Maia
+ * @date 24th June 2022
+ * @bug No known bugs.
+ */
 
 /* Includes */
 #include <device.h>
@@ -127,11 +135,6 @@ static int adc_sample(void) {
 #define BOARDLED_PIN 0x04
 //#define BOARDLED_PIN DT_PROP(PWM0_NID, ch0_pin)
 
-/* Int related declarations */
-
-/* Callback function and variables*/
-
-/* Main function */
 int err = 0;
 
 static int array[SAMPLES];
@@ -148,10 +151,11 @@ volatile int flag = 0;
 typedef enum { manual, automatic } m;
 
 m mode = manual;
+
 /* Main function */
 /**
  *
- * Main is where all the configurations are defined,the threads are created and the fifos are initialized
+ * Main is where all the configurations are defined,the threads are created and the semaphores are initialized
  *
  */
 void config(void);
@@ -211,8 +215,7 @@ void main(void) {
 /* Thread A code implementation */
 /**
  *
- * thread_A_code is the function in which we get 10 samples and save them on a array
- *
+ * thread_A_code is the function in which we get the samples and save them in a array. The ADC values were mapped from 0 to 100.
  */
 void thread_A_code(void *argA, void *argB, void *argC) {
     /* Timing variables to control task periodicity */
@@ -264,7 +267,7 @@ void thread_A_code(void *argA, void *argB, void *argC) {
 /* Thread B code implementation */
 /**
  *
- * thread_B_code is the function in which we get the mean of all samples
+ * thread_B_code is the function in which we get the mean value of the values from thread A, using the last four samples.
  *
  */
 void thread_B_code(void *argA, void *argB, void *argC) {
@@ -312,8 +315,9 @@ void thread_B_code(void *argA, void *argB, void *argC) {
 /* Thread C code implementation */
 /**
  *
- * thread_C_code is the function in which we apply the pwm signal to one of the DevKit leds
- *
+ * thread_C_code is the is the PI controller, adjusting the value that is received from the transistor. Because of 
+ * the pull up resistance the value that is read from the ADC, becomes the symmetric value of the 
+ * light intensity. It also applies the PWM signal to one of the DevKit leds, the duty cycle is the control signal.
  */
 
 int ret1 = 0;
@@ -366,6 +370,11 @@ void thread_C_code(void *argA, void *argB, void *argC) {
     }
 }
 
+/* Thread D code implementation */
+/**
+ *
+ * thread_D_code is the function that allows to show a message to the user, showing if it is in automatic or manual mode, the light intensity wanted, instantaneous light intensity, the error and the control signal.
+ */
 void thread_D_code(void *argA, void *argB, void *argC) {
     while (1) {
         k_sem_take(&sem_cd, K_FOREVER);
@@ -388,6 +397,12 @@ void thread_D_code(void *argA, void *argB, void *argC) {
     }
 }
 
+/* Thread E code implementation */
+/**
+ *
+ * thread_E_code (Not using semaphores) is always reading the buttons, allowing the user to choose from automatic or manual mode. 
+ *
+ */
 void thread_E_code(void *argA, void *argB, void *argC) {
     while (1) {
        // k_sem_take(&sem_de, K_FOREVER);

@@ -1,0 +1,321 @@
+\hypertarget{main_8c}{}\doxysection{main.\+c File Reference}
+\label{main_8c}\index{main.c@{main.c}}
+
+
+\mbox{\hyperlink{main_8c}{Main.\+c}} is the main file of the Assignment 5 -\/ Implementing a closed loop control application in Zephyr.  
+
+
+{\ttfamily \#include $<$device.\+h$>$}\newline
+{\ttfamily \#include $<$devicetree.\+h$>$}\newline
+{\ttfamily \#include $<$drivers/adc.\+h$>$}\newline
+{\ttfamily \#include $<$drivers/gpio.\+h$>$}\newline
+{\ttfamily \#include $<$drivers/pwm.\+h$>$}\newline
+{\ttfamily \#include $<$hal/nrf\+\_\+saadc.\+h$>$}\newline
+{\ttfamily \#include $<$stdio.\+h$>$}\newline
+{\ttfamily \#include $<$stdlib.\+h$>$}\newline
+{\ttfamily \#include $<$string.\+h$>$}\newline
+{\ttfamily \#include $<$sys/\+\_\+\+\_\+assert.\+h$>$}\newline
+{\ttfamily \#include $<$sys/printk.\+h$>$}\newline
+{\ttfamily \#include $<$timing/timing.\+h$>$}\newline
+{\ttfamily \#include $<$zephyr.\+h$>$}\newline
+\doxysubsection*{Macros}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{main_8c_a6423a880df59733d2d9b509c7718d3a9}\label{main_8c_a6423a880df59733d2d9b509c7718d3a9}} 
+\#define {\bfseries STACK\+\_\+\+SIZE}~1024
+\item 
+\mbox{\Hypertarget{main_8c_ad0c329adebc27917fc0a4f51079acf6a}\label{main_8c_ad0c329adebc27917fc0a4f51079acf6a}} 
+\#define {\bfseries SAMPLES}~4
+\item 
+\mbox{\Hypertarget{main_8c_a5936222e9802dbe8ceb1e99bd667466a}\label{main_8c_a5936222e9802dbe8ceb1e99bd667466a}} 
+\#define {\bfseries thread\+\_\+\+A\+\_\+prio}~1
+\item 
+\mbox{\Hypertarget{main_8c_aa9928aa4491a20c74a19c5904ba9530a}\label{main_8c_aa9928aa4491a20c74a19c5904ba9530a}} 
+\#define {\bfseries thread\+\_\+\+B\+\_\+prio}~1
+\item 
+\mbox{\Hypertarget{main_8c_a1bd72aae8d0dd6e887547a1d5e0a8902}\label{main_8c_a1bd72aae8d0dd6e887547a1d5e0a8902}} 
+\#define {\bfseries thread\+\_\+\+C\+\_\+prio}~1
+\item 
+\mbox{\Hypertarget{main_8c_a02433a30dac2e9bc252089790fc081e3}\label{main_8c_a02433a30dac2e9bc252089790fc081e3}} 
+\#define {\bfseries thread\+\_\+\+D\+\_\+prio}~1
+\item 
+\mbox{\Hypertarget{main_8c_a0f62e28f6fa4bc18e2d0c5fefe3aa0aa}\label{main_8c_a0f62e28f6fa4bc18e2d0c5fefe3aa0aa}} 
+\#define {\bfseries thread\+\_\+\+E\+\_\+prio}~2
+\item 
+\mbox{\Hypertarget{main_8c_ad3c05b8933cd253785fdd123f6dbfc18}\label{main_8c_ad3c05b8933cd253785fdd123f6dbfc18}} 
+\#define {\bfseries BOARDBUT1}~11 /$\ast$ Pin at which BUT1 is connected. Addressing is direct (i.\+e., pin number) $\ast$/
+\item 
+\mbox{\Hypertarget{main_8c_a590d906828bd5948fafbef47dc1c3b0c}\label{main_8c_a590d906828bd5948fafbef47dc1c3b0c}} 
+\#define {\bfseries BOARDBUT2}~12 /$\ast$ Pin at which BUT2 is connected. Addressing is direct (i.\+e., pin number) $\ast$/
+\item 
+\mbox{\Hypertarget{main_8c_a2e82ac21050552495e5a8551178bf258}\label{main_8c_a2e82ac21050552495e5a8551178bf258}} 
+\#define {\bfseries BOARDBUT3}~24 /$\ast$ Pin at which BUT3 is connected. Addressing is direct (i.\+e., pin number) $\ast$/
+\item 
+\mbox{\Hypertarget{main_8c_abee96e1280405ff973ee2b6b07eec104}\label{main_8c_abee96e1280405ff973ee2b6b07eec104}} 
+\#define {\bfseries BOARDBUT4}~25 /$\ast$ Pin at which BUT4 is connected. Addressing is direct (i.\+e., pin number) $\ast$/
+\item 
+\mbox{\Hypertarget{main_8c_a7829e7c5c37ea8a78e879aa2028dfb21}\label{main_8c_a7829e7c5c37ea8a78e879aa2028dfb21}} 
+\#define {\bfseries SAMP\+\_\+\+PERIOD\+\_\+\+MS}~25
+\item 
+\mbox{\Hypertarget{main_8c_a2ed7791f41bc6281906a0878492b0894}\label{main_8c_a2ed7791f41bc6281906a0878492b0894}} 
+\#define {\bfseries thread\+\_\+\+A\+\_\+period}~1000
+\item 
+\mbox{\Hypertarget{main_8c_a667158ed9af1b72bf062e54bda71dd4f}\label{main_8c_a667158ed9af1b72bf062e54bda71dd4f}} 
+\#define {\bfseries ADC\+\_\+\+NID}~DT\+\_\+\+NODELABEL(adc)
+\item 
+\mbox{\Hypertarget{main_8c_a00978ca9e8220475258dcbbbb7d29129}\label{main_8c_a00978ca9e8220475258dcbbbb7d29129}} 
+\#define {\bfseries ADC\+\_\+\+RESOLUTION}~10
+\item 
+\mbox{\Hypertarget{main_8c_a2bbc7e1578f01928d36ef7fa94ac4905}\label{main_8c_a2bbc7e1578f01928d36ef7fa94ac4905}} 
+\#define {\bfseries ADC\+\_\+\+GAIN}~ADC\+\_\+\+GAIN\+\_\+1\+\_\+4
+\item 
+\mbox{\Hypertarget{main_8c_a317868c528ebe27fbca094a8bc2d910c}\label{main_8c_a317868c528ebe27fbca094a8bc2d910c}} 
+\#define {\bfseries ADC\+\_\+\+REFERENCE}~ADC\+\_\+\+REF\+\_\+\+VDD\+\_\+1\+\_\+4
+\item 
+\mbox{\Hypertarget{main_8c_aeb8de5967ac4465f35317d818eeb129b}\label{main_8c_aeb8de5967ac4465f35317d818eeb129b}} 
+\#define {\bfseries ADC\+\_\+\+ACQUISITION\+\_\+\+TIME}~ADC\+\_\+\+ACQ\+\_\+\+TIME(ADC\+\_\+\+ACQ\+\_\+\+TIME\+\_\+\+MICROSECONDS, 40)
+\item 
+\mbox{\Hypertarget{main_8c_a8bfca74ee546715af6682194ea92286a}\label{main_8c_a8bfca74ee546715af6682194ea92286a}} 
+\#define {\bfseries ADC\+\_\+\+CHANNEL\+\_\+\+ID}~1
+\item 
+\mbox{\Hypertarget{main_8c_a5508ef7e762284248c2e87e16865522e}\label{main_8c_a5508ef7e762284248c2e87e16865522e}} 
+\#define {\bfseries ADC\+\_\+\+CHANNEL\+\_\+\+INPUT}~NRF\+\_\+\+SAADC\+\_\+\+INPUT\+\_\+\+AIN1
+\item 
+\mbox{\Hypertarget{main_8c_a6b20d41d6252e9871430c242cb1a56e7}\label{main_8c_a6b20d41d6252e9871430c242cb1a56e7}} 
+\#define {\bfseries BUFFER\+\_\+\+SIZE}~1
+\item 
+\mbox{\Hypertarget{main_8c_a4c0e6f34369bef1deb3a9efae6ac14fb}\label{main_8c_a4c0e6f34369bef1deb3a9efae6ac14fb}} 
+\#define {\bfseries GPIO0\+\_\+\+NID}~DT\+\_\+\+NODELABEL(gpio0)
+\item 
+\mbox{\Hypertarget{main_8c_ab48b150a8660d0152dfde25b42c1755f}\label{main_8c_ab48b150a8660d0152dfde25b42c1755f}} 
+\#define {\bfseries PWM0\+\_\+\+NID}~DT\+\_\+\+NODELABEL(pwm0)
+\item 
+\mbox{\Hypertarget{main_8c_a66e62e873d067860b696a1f47b60916a}\label{main_8c_a66e62e873d067860b696a1f47b60916a}} 
+\#define {\bfseries BOARDLED\+\_\+\+PIN}~0x04
+\end{DoxyCompactItemize}
+\doxysubsection*{Enumerations}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{main_8c_ab3cd915d758008bd19d0f2428fbb354a}\label{main_8c_ab3cd915d758008bd19d0f2428fbb354a}} 
+enum {\bfseries m} \{ {\bfseries manual}
+, {\bfseries automatic}
+ \}
+\end{DoxyCompactItemize}
+\doxysubsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{main_8c_aa25f5f9092ccf13998f3cb9e9e1d10a6}\label{main_8c_aa25f5f9092ccf13998f3cb9e9e1d10a6}} 
+{\bfseries K\+\_\+\+THREAD\+\_\+\+STACK\+\_\+\+DEFINE} (thread\+\_\+\+A\+\_\+stack, STACK\+\_\+\+SIZE)
+\item 
+\mbox{\Hypertarget{main_8c_a8318aa1ed5939244957a68387085ddec}\label{main_8c_a8318aa1ed5939244957a68387085ddec}} 
+{\bfseries K\+\_\+\+THREAD\+\_\+\+STACK\+\_\+\+DEFINE} (thread\+\_\+\+B\+\_\+stack, STACK\+\_\+\+SIZE)
+\item 
+\mbox{\Hypertarget{main_8c_a331fd55d9b95c3e662a4148fbc522271}\label{main_8c_a331fd55d9b95c3e662a4148fbc522271}} 
+{\bfseries K\+\_\+\+THREAD\+\_\+\+STACK\+\_\+\+DEFINE} (thread\+\_\+\+C\+\_\+stack, STACK\+\_\+\+SIZE)
+\item 
+\mbox{\Hypertarget{main_8c_a1aa340a38690690e42169ae37089ca8f}\label{main_8c_a1aa340a38690690e42169ae37089ca8f}} 
+{\bfseries K\+\_\+\+THREAD\+\_\+\+STACK\+\_\+\+DEFINE} (thread\+\_\+\+D\+\_\+stack, STACK\+\_\+\+SIZE)
+\item 
+\mbox{\Hypertarget{main_8c_a3a5fa2004c972cdbaa05a746fd2b79a1}\label{main_8c_a3a5fa2004c972cdbaa05a746fd2b79a1}} 
+{\bfseries K\+\_\+\+THREAD\+\_\+\+STACK\+\_\+\+DEFINE} (thread\+\_\+\+E\+\_\+stack, STACK\+\_\+\+SIZE)
+\item 
+void \mbox{\hyperlink{main_8c_a61675a61bbec86901b2fe28f008e881c}{thread\+\_\+\+A\+\_\+code}} (void $\ast$argA, void $\ast$argB, void $\ast$argC)
+\item 
+void \mbox{\hyperlink{main_8c_a99cef2c8673e9c73162dd97f0247ca8e}{thread\+\_\+\+B\+\_\+code}} (void $\ast$argA, void $\ast$argB, void $\ast$argC)
+\item 
+\mbox{\Hypertarget{main_8c_a6eec62f04743b40b6d744ecd2f31cdd2}\label{main_8c_a6eec62f04743b40b6d744ecd2f31cdd2}} 
+void {\bfseries thread\+\_\+\+C\+\_\+code} (void $\ast$argA, void $\ast$argB, void $\ast$argC)
+\item 
+void \mbox{\hyperlink{main_8c_a1a621f0dfdf57a438495482f571278e7}{thread\+\_\+\+D\+\_\+code}} (void $\ast$argA, void $\ast$argB, void $\ast$argC)
+\item 
+void \mbox{\hyperlink{main_8c_a921a85b20aa432498ec7ae5b1da2f99f}{thread\+\_\+\+E\+\_\+code}} (void $\ast$argA, void $\ast$argB, void $\ast$argC)
+\item 
+void \mbox{\hyperlink{main_8c_a12d660f4c7080af4f14996e3d1751d8d}{config}} (void)
+\item 
+\mbox{\Hypertarget{main_8c_a6288eba0f8e8ad3ab1544ad731eb7667}\label{main_8c_a6288eba0f8e8ad3ab1544ad731eb7667}} 
+void {\bfseries main} (void)
+\item 
+\mbox{\Hypertarget{main_8c_ac87153fa2ed9cadaf6a13fe0816feb2e}\label{main_8c_ac87153fa2ed9cadaf6a13fe0816feb2e}} 
+void {\bfseries butpress\+\_\+cbfunction} (const struct device $\ast$dev, struct gpio\+\_\+callback $\ast$cb, uint32\+\_\+t pins)
+\end{DoxyCompactItemize}
+\doxysubsection*{Variables}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{main_8c_a6d4412666e45fbd3d7bb2e537e3e4921}\label{main_8c_a6d4412666e45fbd3d7bb2e537e3e4921}} 
+struct k\+\_\+thread {\bfseries thread\+\_\+\+A\+\_\+data}
+\item 
+\mbox{\Hypertarget{main_8c_ad832c1a3de4a77b89216efc38eddcb72}\label{main_8c_ad832c1a3de4a77b89216efc38eddcb72}} 
+struct k\+\_\+thread {\bfseries thread\+\_\+\+B\+\_\+data}
+\item 
+\mbox{\Hypertarget{main_8c_a9723f8aa3cfd56015ee57bc31879f8ec}\label{main_8c_a9723f8aa3cfd56015ee57bc31879f8ec}} 
+struct k\+\_\+thread {\bfseries thread\+\_\+\+C\+\_\+data}
+\item 
+\mbox{\Hypertarget{main_8c_a91a7abf451804f293c55d5fc507cee31}\label{main_8c_a91a7abf451804f293c55d5fc507cee31}} 
+struct k\+\_\+thread {\bfseries thread\+\_\+\+D\+\_\+data}
+\item 
+\mbox{\Hypertarget{main_8c_a120d3239dbe95adda8c630c28b6dedf0}\label{main_8c_a120d3239dbe95adda8c630c28b6dedf0}} 
+struct k\+\_\+thread {\bfseries thread\+\_\+\+E\+\_\+data}
+\item 
+\mbox{\Hypertarget{main_8c_aaac68d6bd12397c115c8f5fb8b8dae16}\label{main_8c_aaac68d6bd12397c115c8f5fb8b8dae16}} 
+k\+\_\+tid\+\_\+t {\bfseries thread\+\_\+\+A\+\_\+tid}
+\item 
+\mbox{\Hypertarget{main_8c_af2bd9deb85bd5ac0cdf3a0b077411289}\label{main_8c_af2bd9deb85bd5ac0cdf3a0b077411289}} 
+k\+\_\+tid\+\_\+t {\bfseries thread\+\_\+\+B\+\_\+tid}
+\item 
+\mbox{\Hypertarget{main_8c_a3e9a231be3f7d1a28871ddfdf5ca8fe3}\label{main_8c_a3e9a231be3f7d1a28871ddfdf5ca8fe3}} 
+k\+\_\+tid\+\_\+t {\bfseries thread\+\_\+\+C\+\_\+tid}
+\item 
+\mbox{\Hypertarget{main_8c_ae130441eb06f8e1d532010c32c8fd15c}\label{main_8c_ae130441eb06f8e1d532010c32c8fd15c}} 
+k\+\_\+tid\+\_\+t {\bfseries thread\+\_\+\+D\+\_\+tid}
+\item 
+\mbox{\Hypertarget{main_8c_a4803c6815c905e6359a2cc9ee18bde4c}\label{main_8c_a4803c6815c905e6359a2cc9ee18bde4c}} 
+k\+\_\+tid\+\_\+t {\bfseries thread\+\_\+\+E\+\_\+tid}
+\item 
+\mbox{\Hypertarget{main_8c_a2c9b173c6ea51db9d371f2d06fd8582f}\label{main_8c_a2c9b173c6ea51db9d371f2d06fd8582f}} 
+int {\bfseries ab} = 100
+\item 
+\mbox{\Hypertarget{main_8c_a97102b52a1cf13a343a1a414bc865cde}\label{main_8c_a97102b52a1cf13a343a1a414bc865cde}} 
+int {\bfseries bc} = 200
+\item 
+\mbox{\Hypertarget{main_8c_a82e13125c2f279157fcf738219ff21ba}\label{main_8c_a82e13125c2f279157fcf738219ff21ba}} 
+struct k\+\_\+sem {\bfseries sem\+\_\+ab}
+\item 
+\mbox{\Hypertarget{main_8c_addc907d18e7e98a64a832ac1c7be5ad1}\label{main_8c_addc907d18e7e98a64a832ac1c7be5ad1}} 
+struct k\+\_\+sem {\bfseries sem\+\_\+bc}
+\item 
+\mbox{\Hypertarget{main_8c_a2e41357f9cb242cab98e34d3d8042795}\label{main_8c_a2e41357f9cb242cab98e34d3d8042795}} 
+struct k\+\_\+sem {\bfseries sem\+\_\+cd}
+\item 
+\mbox{\Hypertarget{main_8c_aeb9e9bbbb16427bc3a781d46825fb75b}\label{main_8c_aeb9e9bbbb16427bc3a781d46825fb75b}} 
+struct k\+\_\+sem {\bfseries sem\+\_\+de}
+\item 
+\mbox{\Hypertarget{main_8c_a80d0933bb7a6454573b3ade529a72418}\label{main_8c_a80d0933bb7a6454573b3ade529a72418}} 
+struct k\+\_\+timer {\bfseries my\+\_\+timer}
+\item 
+\mbox{\Hypertarget{main_8c_a445f79326d40128ece59a749adff6894}\label{main_8c_a445f79326d40128ece59a749adff6894}} 
+const struct device $\ast$ {\bfseries adc\+\_\+dev} = NULL
+\item 
+\mbox{\Hypertarget{main_8c_a6ce68847c12434f60d1b2654a3dc3409}\label{main_8c_a6ce68847c12434f60d1b2654a3dc3409}} 
+int {\bfseries err} = 0
+\item 
+\mbox{\Hypertarget{main_8c_a2a2c07ef29db2418b09ffb04981b6e40}\label{main_8c_a2a2c07ef29db2418b09ffb04981b6e40}} 
+int {\bfseries final\+Mean} = 0
+\item 
+\mbox{\Hypertarget{main_8c_ac8529dec83e91f71d383fb84302cfb27}\label{main_8c_ac8529dec83e91f71d383fb84302cfb27}} 
+const struct device $\ast$ {\bfseries gpio0\+\_\+dev}
+\item 
+\mbox{\Hypertarget{main_8c_a07b9a1d80376da71898a69d1c83850d4}\label{main_8c_a07b9a1d80376da71898a69d1c83850d4}} 
+const struct device $\ast$ {\bfseries pwm0\+\_\+dev}
+\item 
+\mbox{\Hypertarget{main_8c_a6baa346e44f4c2158d2be4f9b77b8203}\label{main_8c_a6baa346e44f4c2158d2be4f9b77b8203}} 
+int {\bfseries ret} = 0
+\item 
+\mbox{\Hypertarget{main_8c_a15f86ab5a7130e95bce1eb5e0083536d}\label{main_8c_a15f86ab5a7130e95bce1eb5e0083536d}} 
+unsigned int {\bfseries pwm\+Period\+\_\+us} = 100
+\item 
+\mbox{\Hypertarget{main_8c_acd1fe089d599a01b2b6e347f738250b1}\label{main_8c_acd1fe089d599a01b2b6e347f738250b1}} 
+volatile int {\bfseries flag} = 0
+\item 
+\mbox{\Hypertarget{main_8c_aac1d834827e494c780bcc1d2f9328c91}\label{main_8c_aac1d834827e494c780bcc1d2f9328c91}} 
+m {\bfseries mode} = manual
+\item 
+int \mbox{\hyperlink{main_8c_a2493e3eb14a7d819fb6017fbf4e5df0b}{ret1}} = 0
+\item 
+\mbox{\Hypertarget{main_8c_a32f70aa3ab4f03140c4c1b635bb80c99}\label{main_8c_a32f70aa3ab4f03140c4c1b635bb80c99}} 
+const float {\bfseries TI} = 0.\+05
+\item 
+\mbox{\Hypertarget{main_8c_af512d5e39283487f0dd8c3652f9b7565}\label{main_8c_af512d5e39283487f0dd8c3652f9b7565}} 
+const float {\bfseries K} = 0.\+05
+\item 
+\mbox{\Hypertarget{main_8c_a2ae95f271cdad8681adc65e83e4e218d}\label{main_8c_a2ae95f271cdad8681adc65e83e4e218d}} 
+const float {\bfseries h} = SAMP\+\_\+\+PERIOD\+\_\+\+MS / 1000.\+0
+\item 
+\mbox{\Hypertarget{main_8c_a27b218612ed19775b8ec3407da74db71}\label{main_8c_a27b218612ed19775b8ec3407da74db71}} 
+float {\bfseries s0} = K $\ast$ (1 + (h / TI))
+\item 
+\mbox{\Hypertarget{main_8c_a2b10e3ff8ddc612278a30549f2ee0255}\label{main_8c_a2b10e3ff8ddc612278a30549f2ee0255}} 
+float {\bfseries s1} = -\/K
+\item 
+\mbox{\Hypertarget{main_8c_a55831f7eab5ed2917a0191e858852f42}\label{main_8c_a55831f7eab5ed2917a0191e858852f42}} 
+float {\bfseries u} = 0
+\item 
+\mbox{\Hypertarget{main_8c_a7cfd13d282af770aaa971755fa092fca}\label{main_8c_a7cfd13d282af770aaa971755fa092fca}} 
+float {\bfseries error} = 0
+\item 
+\mbox{\Hypertarget{main_8c_a39a4faa3bd5fbec63bad922745e90e53}\label{main_8c_a39a4faa3bd5fbec63bad922745e90e53}} 
+float {\bfseries prev\+Error} = 0
+\item 
+\mbox{\Hypertarget{main_8c_ad12c1f1d2f3c21588b9467a25f8a160b}\label{main_8c_ad12c1f1d2f3c21588b9467a25f8a160b}} 
+float {\bfseries prevU} = 0
+\item 
+\mbox{\Hypertarget{main_8c_ae1ddcaebb3a5920667394dbd7a9a2579}\label{main_8c_ae1ddcaebb3a5920667394dbd7a9a2579}} 
+float {\bfseries ref} = 40
+\item 
+\mbox{\Hypertarget{main_8c_ac09383ee81d49e88bb9c8b349260c033}\label{main_8c_ac09383ee81d49e88bb9c8b349260c033}} 
+float {\bfseries feed\+Back} = 0
+\item 
+\mbox{\Hypertarget{main_8c_ad43c3812e6d13e0518d9f8b8f463ffcf}\label{main_8c_ad43c3812e6d13e0518d9f8b8f463ffcf}} 
+int {\bfseries count} = 0
+\item 
+\mbox{\Hypertarget{main_8c_ada1cd06e33cfd221862684d3c7a1fa9f}\label{main_8c_ada1cd06e33cfd221862684d3c7a1fa9f}} 
+int {\bfseries duty} = 0
+\item 
+\mbox{\Hypertarget{main_8c_af36a76a97c2cc0ea7b1c0c25933934a9}\label{main_8c_af36a76a97c2cc0ea7b1c0c25933934a9}} 
+int {\bfseries display} = 0
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+\mbox{\hyperlink{main_8c}{Main.\+c}} is the main file of the Assignment 5 -\/ Implementing a closed loop control application in Zephyr. 
+
+\begin{DoxyAuthor}{Author}
+Ângelo Mostardinha, Ruben Costa, Leonardo Maia 
+\end{DoxyAuthor}
+\begin{DoxyDate}{Date}
+24th June 2022 
+\end{DoxyDate}
+\begin{DoxyRefDesc}{Bug}
+\item[\mbox{\hyperlink{bug__bug000001}{Bug}}]No known bugs. \end{DoxyRefDesc}
+
+
+\doxysubsection{Function Documentation}
+\mbox{\Hypertarget{main_8c_a12d660f4c7080af4f14996e3d1751d8d}\label{main_8c_a12d660f4c7080af4f14996e3d1751d8d}} 
+\index{main.c@{main.c}!config@{config}}
+\index{config@{config}!main.c@{main.c}}
+\doxysubsubsection{\texorpdfstring{config()}{config()}}
+{\footnotesize\ttfamily void config (\begin{DoxyParamCaption}\item[{void}]{ }\end{DoxyParamCaption})}
+
+Main is where all the configurations are defined,the threads are created and the semaphores are initialized \mbox{\Hypertarget{main_8c_a61675a61bbec86901b2fe28f008e881c}\label{main_8c_a61675a61bbec86901b2fe28f008e881c}} 
+\index{main.c@{main.c}!thread\_A\_code@{thread\_A\_code}}
+\index{thread\_A\_code@{thread\_A\_code}!main.c@{main.c}}
+\doxysubsubsection{\texorpdfstring{thread\_A\_code()}{thread\_A\_code()}}
+{\footnotesize\ttfamily void thread\+\_\+\+A\+\_\+code (\begin{DoxyParamCaption}\item[{void $\ast$}]{argA,  }\item[{void $\ast$}]{argB,  }\item[{void $\ast$}]{argC }\end{DoxyParamCaption})}
+
+thread\+\_\+\+A\+\_\+code is the function in which we get the samples and save them in a array. The ADC values were mapped from 0 to 100. \mbox{\Hypertarget{main_8c_a99cef2c8673e9c73162dd97f0247ca8e}\label{main_8c_a99cef2c8673e9c73162dd97f0247ca8e}} 
+\index{main.c@{main.c}!thread\_B\_code@{thread\_B\_code}}
+\index{thread\_B\_code@{thread\_B\_code}!main.c@{main.c}}
+\doxysubsubsection{\texorpdfstring{thread\_B\_code()}{thread\_B\_code()}}
+{\footnotesize\ttfamily void thread\+\_\+\+B\+\_\+code (\begin{DoxyParamCaption}\item[{void $\ast$}]{argA,  }\item[{void $\ast$}]{argB,  }\item[{void $\ast$}]{argC }\end{DoxyParamCaption})}
+
+thread\+\_\+\+B\+\_\+code is the function in which we get the mean value of the values from thread A, using the last four samples. \mbox{\Hypertarget{main_8c_a1a621f0dfdf57a438495482f571278e7}\label{main_8c_a1a621f0dfdf57a438495482f571278e7}} 
+\index{main.c@{main.c}!thread\_D\_code@{thread\_D\_code}}
+\index{thread\_D\_code@{thread\_D\_code}!main.c@{main.c}}
+\doxysubsubsection{\texorpdfstring{thread\_D\_code()}{thread\_D\_code()}}
+{\footnotesize\ttfamily void thread\+\_\+\+D\+\_\+code (\begin{DoxyParamCaption}\item[{void $\ast$}]{argA,  }\item[{void $\ast$}]{argB,  }\item[{void $\ast$}]{argC }\end{DoxyParamCaption})}
+
+thread\+\_\+\+D\+\_\+code is the function that allows to show a message to the user, showing if it is in automatic or manual mode, the light intensity wanted, instantaneous light intensity, the error and the control signal. \mbox{\Hypertarget{main_8c_a921a85b20aa432498ec7ae5b1da2f99f}\label{main_8c_a921a85b20aa432498ec7ae5b1da2f99f}} 
+\index{main.c@{main.c}!thread\_E\_code@{thread\_E\_code}}
+\index{thread\_E\_code@{thread\_E\_code}!main.c@{main.c}}
+\doxysubsubsection{\texorpdfstring{thread\_E\_code()}{thread\_E\_code()}}
+{\footnotesize\ttfamily void thread\+\_\+\+E\+\_\+code (\begin{DoxyParamCaption}\item[{void $\ast$}]{argA,  }\item[{void $\ast$}]{argB,  }\item[{void $\ast$}]{argC }\end{DoxyParamCaption})}
+
+thread\+\_\+\+E\+\_\+code (Not using semaphores) is always reading the buttons, allowing the user to choose from automatic or manual mode. 
+
+\doxysubsection{Variable Documentation}
+\mbox{\Hypertarget{main_8c_a2493e3eb14a7d819fb6017fbf4e5df0b}\label{main_8c_a2493e3eb14a7d819fb6017fbf4e5df0b}} 
+\index{main.c@{main.c}!ret1@{ret1}}
+\index{ret1@{ret1}!main.c@{main.c}}
+\doxysubsubsection{\texorpdfstring{ret1}{ret1}}
+{\footnotesize\ttfamily int ret1 = 0}
+
+thread\+\_\+\+C\+\_\+code is the is the PI controller, adjusting the value that is received from the transistor. Because of the pull up resistance the value that is read from the ADC, becomes the symmetric value of the light intensity. It also applies the PWM signal to one of the Dev\+Kit leds, the duty cycle is the control signal. 
